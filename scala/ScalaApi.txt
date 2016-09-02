@@ -1,0 +1,223 @@
+Scala API （使用的时候继续补充，没有写入的内容！！！ IDE: 内部跟踪跳转不是很方便么？ 难不倒你吧 haha）
+
+## scala
+
+1.language 控制一些语言特征：简单来说就有些语言功能块可以通过该类导入，比如：Dynamic trait，experimental（contains newer features that have not yet been tested in production）
+
+2.trait Cloneable: 不同平台(.NET,JAVA)可以clone的特质类
+
+3. MatchError: 模式匹配异常的异常捕获
+
+4. inline: 内联扩展是用来消除函数调用时的时间开销。它通常用于频繁执行的函数。 一个小内存空间的函数非常受益.内联函数具有一般函数的特性，它与一般函数所不同之处只在于函数调用的处理。一般函数进行调用时，要将程序执行权转到被调用函数中，然后再返回到调用它的函数中；而内联函数在调用时，是将调用表达式用内联函数体来替换。在使用内联函数时，应注意如下几点：　
+	
+		1.在内联函数内不允许用循环语句和开关语句。　如果内联函数有这些语句，则编译将该函数视同普通函数那样产生函数调用代码,递归函数(自己调用自己的函数)是不能被用来做内联函数的。内联函数只适合于只有1～5行的小函数。
+		
+			对一个含有许多语句的大函数，函数调用和返回的开销相对来说微不足道，所以也没有必要用内联函数实现。　
+	
+		2.内联函数的定义必须出现在内联函数第一次被调用之前。　
+
+5. Predef: 预定义的一些类型，包含:Commonly Used Types、Console I/O、Assertions（assume, require and ensuring）、Implicit Conversions（like:converting a Short value to a Long value）如： type String = java.lang.String
+
+6. @remote: An annotation that designates the class to which it is applied as remotable.
+
+7. @SerialVersionUID（long）: 指定uid给特定的serializable class
+
+8. Some: Class Some[A] represents existing values of type A.
+
+9. @specialized: Annotate type parameters on which code should be automatically specialized
+
+10. StringContext: 主要是做变量引用的值替换：s"my name is $name" 转换成了 => StringContext("my name is ", "").s(name)。可以自定义替换的类型.
+    
+11. @throws: @throws[IOException]("if the file doesn't exist") 
+	
+	class Reader(fname: String) {
+		private val in = new BufferedReader(new FileReader(fname))
+		@throws[IOException]("if the file doesn't exist")
+		def read() = in.read()
+	}
+
+12.@transient: 如果用transient声明一个实例变量，当对象存储时，它的值不需要维持。换句话来说就是，用transient关键字标记的成员变量不参与序列化过程。serialization提供了一种持久化对象实例的机制。
+		
+		当持久化对象时，可能有一个特殊的对象数据成员，我们不想用serialization机制来保存它。为了在一个特定对象的一个域上关闭serialization，可以在这个域前加上关键字transient。当一个对象被序列化的时候，transient型变量的值不包括在序列化的表示中，然而非transient型的变量是被包括进去的
+		
+13. @unchecked :声明不需要检查的该变量的类型注释：(x: @unchecked) match { case Some(y) => y }, List[String @unchecked]	
+
+14. @volatile: volatile的作用是： 作为指令关键字，确保本条指令不会因编译器的优化而省略，且要求每次直接读值.volatile是一个类型修饰符（type specifier）。它是被设计用来修饰被不同线程访问和修改的变量。如果不加入volatile，基本上会导致这样的结果：要么无法编写多线程程序，要么编译器失去大量优化的机会
+
+
+## Scala.Annotation
+
+## scala.beans
+
+## SCALA.COLLECTION
+
+1. Traversable: A trait for traversable collections. All operations are guaranteed to be performed in a single-threaded manner.
+
+##scala.collection.concurrent
+
+1. map : A template trait for mutable maps that allow concurrent access.
+
+2. TrieMap: 线程安全，锁自由，可扩展的并发一致插入和删除操作，内存优化高效O(1),原子操作
+
+## SCALA.COLLECTION.CONVERT 
+
+1. DecorateAsJava： 提供java 集合类型和scala集合类型之间的转换（asJava，asScala） scala.collection.Seq => java.util.List， 等
+
+2. DecorateAsScala
+
+3. WrapAsJava : scala.collection.mutable.Map <=> java.util.Dictionary等
+
+## SCALA.COLLECTION.GENERIC
+
+## scala.collection.immutable
+
+1. :: : A non empty list characterized by a head and a tail.
+
+2. SortedMap: 按键排好序的map，当需要给map的key排序的时候，使用这个就可以省去一些排序操作，在键插入的时候就可得到最后的结果
+
+3. Stream ： lazy的lists，重要的是：这个list是有记忆性的，存储了之前已经得到的结果，需要的时候不会重复计算（memoization such that previously computed values are converted from Stream elements to concrete values of type A.）
+
+4. StringLike： 提供装换为Regex的.r方法
+
+## scala.collection.mutable
+
+## scala.collection.parallel
+
+1. Combiner： 合并器
+
+## scala.collection.parallel.immutable
+
+## scala.collection.parallel.mutable
+
+## scala.collection.script ： all was @deprecated
+
+## scala.compat
+
+## scala.concurrent
+
+1. ExecutionContext：asynchronous（异步的），An ExecutionContext that is also a Java ExecutorService；An ExecutionContext that is also a Java Executor.
+
+2. Future： Asynchronous computations（异步执行计算）块,Future { // ....}, 结果： onFailure {case ：... }, onSuccess { case : ...}
+
+3. JavaConversions: The JavaConversions object provides implicit conversions supporting interoperability between Scala and Java concurrency classes (java 和scala 并发pool的装换)
+
+## scala.concurrent.duration
+
+1. Duration： Utility for working with java.util.concurrent.TimeUnit durations.（为scala并发提供的：it is optimized for the needs of scala.concurrent）
+
+##  scala.io
+
+1. BufferedSource：Source.fromFile(file: File, bufferSize: Int)(implicit codec: Codec): BufferedSource 的返回值，底层操作还是用这个读文件
+
+2. Codec： code 编码
+
+3. Source： 本地io文件读取的源
+
+## scala.math
+
+## scala.ref
+
+## scala.reflect
+
+1. ClassTag： （类型自动推断的声明，泛化的类型表示） A ClassTag[T] stores the erased class of a given type T, accessible via the runtimeClass field. This is particularly useful for instantiating Arrays whose element types are unknown at compile time
+
+2. Manifest: A Manifest[T] is an opaque(隐式的类型描述) descriptor for type T
+
+## scala.runtime
+
+## scala.sys
+
+## scala.sys.process
+
+## scala.text : all was @deprecated
+
+## scala.util
+
+1. Either: (可接受多种数据类型，输入的数据值类型不确定的时候可以用这个)。Represents a value of one of two possible types (a disjoint union.) Instances of Either are either an instance of scala.util.Left or scala.util.Right.
+
+2. Sorting： 提供一些数据的基本排序算法如： quickSort
+
+3. Try： scala 中的Try[T]，可以使得编程更加符合函数化。可以尝试使用这个替换 try {...} catch {...}
+
+## scala.util.control
+
+1. Breaks: 类似java中的break语句的功能，只是使用方式截然不同。
+	
+	val mybreaks = new Breaks
+	
+	import mybreaks.{break, breakable}
+
+	breakable {
+		for (...) {
+			if (...) break()
+		}
+	}
+	
+## scala.util.hashing
+
+1. Hashing
+
+2. MurmurHash3： An implementation of Austin Appleby's MurmurHash 3 algorithm (MurmurHash3_x86_32). This object contains methods that hash values of various types as well as means to construct Hashing objects
+
+## scala.util.matching
+
+1. Regex； The canonical（标准的） way to create a Regex is by using the method r, provided implicitly for strings: val date = """(\d\d\d\d)-(\d\d)-(\d\d)""".r
+	
+	注：Since escapes are not processed in multi-line string literals, using triple quotes avoids having to escape the backslash character, so that "\\d" can be written """\d""".
+
+2. UnanchoredRegex : A Regex that finds the first match when used in a pattern match.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
