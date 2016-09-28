@@ -1,0 +1,39 @@
+Python
+
+ref: https://zhuanlan.zhihu.com/p/20878530?refer=intelligentunit
+
+一、基本数据类型
+
+Python拥有一系列的基本数据类型，比如整型、浮点型、布尔型和字符串等。
+
+二、容器Containers
+
+Python有以下几种容器类型：列表（lists）、字典（dictionaries）、集合（sets）和元组（tuples）
+
+1. 元组是一个值的有序列表（不可改变）。从很多方面来说，元组和列表都很相似。和列表最重要的不同在于，元组可以在字典中用作键，还可以作为集合的元素，而列表不行
+
+三、Numpy
+
+Numpy是Python中用于科学计算的核心库。它提供了高性能的多维数组对象，以及相关工具。
+
+1. 数组Arrays
+
+四、SciPy
+
+Numpy提供了高性能的多维数组，以及计算和操作数组的基本工具。SciPy基于Numpy，提供了大量的计算和操作数组的函数，这些函数对于不同类型的科学和工程计算非常有用。
+
+1. 图像操作
+
+SciPy提供了一些操作图像的基本函数
+
+2. 点之间的距离
+
+五、 Matplotlib
+
+Matplotlib是一个作图库。这里简要介绍matplotlib.pyplot模块，功能和MATLAB的作图功能类似。
+
+1. 绘图
+
+2. 绘制多个图像
+
+3. 图像
