@@ -1,0 +1,81 @@
+1. PageRank
+	(pageID, Linklist): 每个页面相邻页面的列表
+	(pageID, rank): 每个页面当前的排序值
+	迭代过程：
+		（1）将每个页面的排序值初始化为1.0
+		（2）在每次迭代中，对页面p，向其每个相邻页面（有直接连接的页面）发送一个值为rank(p) / numberNeighbors(p)的贡献值
+		（3）将每个页面的排序值设为 0.15 + 0.85 * contributionReceived (contributionReceived：某个页面可能会受到多个贡献值，按照pageID分组累加之后再赋值即可 and why? 1 = 0.15 + 0.85)
+		 最后两步收敛通常在10轮迭代左右
+		 
+	spark实现：
+	val links = sc.objectFile[(String, Seq[String])]("links").partitionBy(new HashPartitioner(100)).persist()
+	val ranks = links.mapValues(v => 1.0)
+	
+	for (i <- 0 until 10) {
+		val contributionReceived = links.join(ranks).flatMap {
+			case(pageID, (linksSeq, rank)) =>
+				linksSeq.map(dest => (dest, rank / linksSeq.size))
+		}
+		
+		ranks = contributionReceived.reduceByKey(_+_).mapValues(v => 0.15 + 0.85 * v)
+	}
+	
+	ranks.saveAsTextFile("ranks")
+	
+	代码高效分析：
+		（1）links rdd 每次迭代都有连接操作， 一开始进行分区操作，这样他就不需要进行网络数据混洗了，并可持续化到内存供后续迭代使用
+
+		（2） 第一次ranks 使用mapValues() 而不是map 来保留父RDD的分区方式，这样第一次连接操作开销很少
+		
+		（3） 在reduceByKey() 后使用 mapValues() 因为 reduceByKey() 的结果已经是哈希分区了，这样一来下一次循环中再次与links进行连接操作就会更加高效
+		
+		（4） 为了最大化分区相关优化的潜在作用， 应该在无需改变原始数据键值的时候尽量使用mapValues() 或 flatMapValues() 
+		
+	影响分区方式的操作
+		会为生成结果RDD设定好分区方式的操作有：cogroup()、groupWith、join、 leftOuterJoin、 rightOuterJoin、 groupByKey、 reduceByKey、 combineByKey、 partitionBy、sort、 mapValues()（如果父RDD有分区方式的话）、flatMapValues()（如果父RDD有分区方式的话）
+		以及filter()（如果父RDD有分区方式的话），其他所有的操作结果都不会存在特定的分区方式。最后，对于二元操作，输出的数据分区方式取决于父RDD的分区方式。默认情况下，结果会采用哈希分区的方式，分区的数量和并行度一样，不过如果父RDD已经设置过了分区的方式的话，那么结果就会采用那种分区的方式，如果两个父RDD都设置过分区那么采用第一个父RDD的分区方式
+		
+	HashPartitioner，RangePartitioner，自定义分区方式
+	基于域名的分区实现：
+	class DomainNamePartitioner（numParts：Int） extends org.apache.spark.Partitioner {
+		override def numPartitions: Int = numParts
+		override def getPartition(key: Any): Int = {
+			val domain = new Java.net.URL(key.toString).getHost()
+			val code = (domain.hashCode % numPartitions)
+			if(code < 0)
+				code + numPartitions
+			else
+				code
+		}
+		// 用来让spark区分分区函数对象的java equals方法
+		override def equals(other: Any): Boolean = other match {
+			case dnp: DomainNamePartitioner =>
+				dnp.numPartitions == numPartitions
+			case _ => false
+		}
+	}
+	
+	自定义的累计器操作：
+		必须是同时满足交换律和结合律（sum 和 max 满足）
+		
+	基于分区进行操作
+		共享连接池和JSON解析器: mapPartitions()、 mapPartitionWithIndex()、 foreachPartition()
+		
+	与外部程序间的通道
+		rdd.pipe()、 sc.addFile(path)
+		
+	执行器节点
+		负责运行spark任务，并将结果返回给驱动器节点，通过自身的块管理器为用户程序要求缓存的RDD提供内存式存储，rdd是直接缓存在执行器的进程内的。
+	
+	spark应用执行流程
+		通过spark-submit脚本提交spark应用
+		脚本启动驱动器程序，调用用户定义的main方法
+		驱动器程序与集群管理器通信，申请资源以启动执行器节点
+		集群管理为驱动器程序启动执行器节点
+		驱动器进程执行用户应用中的操作。根据定义的rdd装换和行动操作，驱动节点把工作以任务的形式发送到执行器进程
+		任务在执行器程序中进行计算并保存结果
+		main退出或sc.stop ,驱动程序会终止执行器进程，并且通过集群管理器释放资源
+		
+	
+		
+	
