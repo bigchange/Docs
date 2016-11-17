@@ -76,6 +76,97 @@
 		任务在执行器程序中进行计算并保存结果
 		main退出或sc.stop ,驱动程序会终止执行器进程，并且通过集群管理器释放资源
 		
+	JDBC/ODBC 服务器 、 Beeline
 	
+	Streaming
+		nc/ncat/nmap 向套接字发送数据命令
+		检查点机制，容错性提高， 一般每处理5-10个批次的数据保存一次，再恢复的时候回溯到上个检查点即可
+		有状态和无状态转化操作
+		有状态装换： 滑动窗口(窗口大小，滑动步长 - 都必须为批次间隔的整数倍，含义为：每隔滑动步长的时间，计算前窗口大小的批次数据)，updateStateByKey(),需要提前打开检查点来确保容错（ssc.checkpoint("hdfs://")）
+		transform()
+
+		reduceByKeyAndWindow()
+
+		updateStateByKey 实例跟踪HTTP响应次数(键，事件列表) -> (键， 状态)
+			def updataRunningSum(values:Seq[Long], state:Option[Long]) = { Some(state.getOrElse(0L) + values.size)}
+			val respondseCodeDstream = dataRDD.map(log => (log.getRespondCode(),1L))
+			val respondseCodeCountDstream = respondseCodeDstream.updateStateByKey(updataRunningSum _)
 		
+		存储数据到外部系统
+			rdd.foreachRDD { rdd =>
+				rdd.foreachPartition { partition =>
+				 // 打开存储系统的连接（比如一个数据库的连接）
+				 partition.foreach { item =>
+					//使用连接把item 存到外部系统
+				 }
+				 // 关闭连接
+				}
+			}
+		
+		Apache Flume 推式接收器和拉式接收器
+		
+		配置不间断的运行
+			第一步设置检查点机制
+			第二步驱动器程序容错：
+				def createStreamingContext = {
+				  ...
+				  // val sc = new SparkContext(conf)
+				  val sparkConf = new SparkConf()
+				  val ssc = new StreamingContext(sparkConf, Seconds(1))
+				  ssc.checkpoint(checkpoint_dir)
+				  
+				}
+				...
+				val ssc = StreamingContext.getOrCreate(checkpoint_dir, createStreamingContext _)
+		    
+			第三步使用monit工具监视驱动器程序进程并重启（或者在提交驱动器程序的时候使用参数--supervise标记来让Spark重启失败的驱动器程序）
+		
+		性能考量
+			批次和窗口大小 调整
+			并行度
+				增加接收器的数目通过union 合并为一个数据源
+				将收到的数据显式的进行重新分区
+				提高聚合度计算的并行度（reduceByKey 等操作中指定并行度）
+			垃圾回收和内存使用
+				配置参数 spark.executor.extraJavaOptions=-XX:+UseConcMarkSweepGC 打开java的并发标志-消除收集器
+				以序列化的格式缓存
+				控制缓存移除的策略（SPARK使用LRU缓存，可以通过spark.cleaner.ttl配置超出给定时间范围就显式的移除RDD）
+				
+2. 机器学习
 	
+	向量算术操作：scala 的 Breeze
+	特征提取
+		TF-IDF： 词频-逆文档频率
+		缩放： 均值和std（StandardScaler）
+		正规化：Normalizer 向量正规化为长度1
+		Word2vec： 基于神经网络的文本特征化算法，可以将数据传给许多下游算法。该模型的大小等于你的词库中的单词数乘以向量的大小（向量大小默认为100），比较适合的词库大小约为100 000个词
+		统计： mllib.stat.Statistics
+		线性回归、 逻辑回归、 支持向量机、 朴素贝叶斯、 决策树和随机森林、 聚类、协同过滤
+		降维
+			主成分分析PCA
+			奇异值分解
+		模型评估
+			BinaryClassificationMetrics 和 MulticlassMetric - 准确率、 召回率、 ROC曲线下面积
+			缩放输入特征、 正确提取文本特征（NLTK 这样的外部库来提取词）、标上正确的标签等
+		
+		流水线API(ML包)
+			垃圾分类实例
+			case class LabelDoc(id:Long, text:String, label:Double)
+			val doc = // 读取LabelDoc的RDD
+			val sqlContext = new SQLContext(sc)
+			import sqlContext._
+			// 配置流水线的步骤：分词、词频统计、逻辑回归、每个步骤会输出SchemaRDD的一个列，并作为下一个步骤的输入列
+			val tokenizer = new Tokenizer().setInputCol("text").setOutputCol("words")
+			val tf  = new HashingTF().setNumFeatures(10000).setInputCol(tokenizer.getOutputCol).setOutputCol("features")
+			val lr = new LogisticRegression() // 默认使用”features“作为输入列
+			val pipe = new Pipeline().setStages(Array(tokenizer, tf, lr))
+			
+			// 使用流水线对训练文档进行拟合
+			val model = pipe.fit(doc)
+			// 也可以通过交叉验证对一批参数进行网格搜索，找到最佳模型
+			val paramMaps = new ParamGridBuilder().addGrid(tf.numFeatures,Array(10000, 20000)).addGrid(lr.maxIter, Array(100, 200)).build()
+			val eval = new BinaryClassificationEvaluator()
+			val cv = new CrossValidator().setEstimator(lr).setEstimatorParamMaps(paramMaps).setEvaluator(eval)
+			val bestModel = cv.fit(doc)
+			
+		
