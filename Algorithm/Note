@@ -169,4 +169,8 @@
 			val cv = new CrossValidator().setEstimator(lr).setEstimatorParamMaps(paramMaps).setEvaluator(eval)
 			val bestModel = cv.fit(doc)
 			
+		Omega - google 下一代集群调度系统，现有Mesos，yarn集群调度系统
 		
+		Standing on Shoulders of Giants
+		
+		Finished!
