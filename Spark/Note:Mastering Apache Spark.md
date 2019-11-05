@@ -1,23 +1,23 @@
-1. ´´½¨sc
-	val sc = SparkContext.getOrCreate() // ÆäÖĞÁ½¸öÇ¿ÖÆµÄÅäÖÃmaster ºÍ appnameÔÚ shell Æô¶¯µÄÊ±ºò±ØĞëÖ¸¶¨
- »ò val sc = SparkContext.getOrCreate(conf)
+1. åˆ›å»ºsc
+	val sc = SparkContext.getOrCreate() // å…¶ä¸­ä¸¤ä¸ªå¼ºåˆ¶çš„é…ç½®master å’Œ appnameåœ¨ shell å¯åŠ¨çš„æ—¶å€™å¿…é¡»æŒ‡å®š
+ æˆ– val sc = SparkContext.getOrCreate(conf)
  
-2. yarn-client ºÍ yarn-cluster ÔÚspark2.0Ö®ºó±»--delopy-mode client/cluster Ìæ»»ÁË
+2. yarn-client å’Œ yarn-cluster åœ¨spark2.0ä¹‹åè¢«--delopy-mode client/cluster æ›¿æ¢äº†
 
 3. Setting Local Properties
 	
-	sc.setLocalProperty("spark.scheduler.pool", "myPool") Í¨¹ıÕâ¸öÅäÖÃ¿ÉÒÔÊÖ¶¯¿ØÖÆ²»Í¬action´¥·¢µÄjobsÊÇ·ñÒªÔÚ²»Í¬µÄthread poolÖĞÔËĞĞ¡£
+	sc.setLocalProperty("spark.scheduler.pool", "myPool") é€šè¿‡è¿™ä¸ªé…ç½®å¯ä»¥æ‰‹åŠ¨æ§åˆ¶ä¸åŒactionè§¦å‘çš„jobsæ˜¯å¦è¦åœ¨ä¸åŒçš„thread poolä¸­è¿è¡Œã€‚
 
 4. Distribute JARs to workers
 
 	The jar you specify with SparkContext.addJar will be copied to all the worker nodes.
 		sc.addJar("build.sbt")
 		
-	¹ã²¥±äÁ¿:ÕâÀïÓĞ¸ö×¢ÒâµÄµÄµØ·½£º ¾ÍÊÇ¹ã²¥±äÁ¿Ê±executor¼¶±ğ£¬ÎªºÎ²»ÊÇtask¼¶±ğ£¿ÒòÎªtaskÊÇworkÉÏµÄthread¼¶£¬Ã¿¸öthreadÊÇ¹²ÏíÄÚ´æ±äÁ¿£¬ÄÇÃ´Ã»ÓĞ±ØÒª½«¹ã²¥±äÁ¿¹²Ïíµ½task¼¶£¬ËùÓĞtaskÒÀ¾ÉÊÇ¿ÉÒÔÊµÏÖ¹²Ïí
+	å¹¿æ’­å˜é‡:è¿™é‡Œæœ‰ä¸ªæ³¨æ„çš„çš„åœ°æ–¹ï¼š å°±æ˜¯å¹¿æ’­å˜é‡æ—¶executorçº§åˆ«ï¼Œä¸ºä½•ä¸æ˜¯taskçº§åˆ«ï¼Ÿå› ä¸ºtaskæ˜¯workä¸Šçš„threadçº§ï¼Œæ¯ä¸ªthreadæ˜¯å…±äº«å†…å­˜å˜é‡ï¼Œé‚£ä¹ˆæ²¡æœ‰å¿…è¦å°†å¹¿æ’­å˜é‡å…±äº«åˆ°taskçº§ï¼Œæ‰€æœ‰taskä¾æ—§æ˜¯å¯ä»¥å®ç°å…±äº«
 
 5. Running Jobs (runJob methods)
 	
-	7ÖĞ²»Í¬ĞèÇóÏÂµÄrunJob·½·¨£º
+	7ä¸­ä¸åŒéœ€æ±‚ä¸‹çš„runJobæ–¹æ³•ï¼š
 	
 		runJob[T, U](rdd: RDD[T], func: (TaskContext, Iterator[T]) => U, partitions: Seq[Int], resultHandler: (Int, U) => Unit): Unit
 		
@@ -34,7 +34,7 @@
 		
 		runJob[T, U: ClassTag](rdd: RDD[T], processPartition: Iterator[T] => U, resultHandler: (Int, U) => Unit): Unit
 		
-6. Transformations£º RDDs ÊÇ²»¿É±äµÄ£¬²»»á±»ĞŞ¸Ä£¬transform²Ù×÷Ö»ÊÇ½«rdd×ª»»³ÉÁíÒ»¸öĞÎÊ½µÄrdd
+6. Transformationsï¼š RDDs æ˜¯ä¸å¯å˜çš„ï¼Œä¸ä¼šè¢«ä¿®æ”¹ï¼Œtransformæ“ä½œåªæ˜¯å°†rddè½¬æ¢æˆå¦ä¸€ä¸ªå½¢å¼çš„rdd
 
 	1) There are transformations that may trigger jobs, e.g. sortBy, zipWithIndex, etc.
 	
