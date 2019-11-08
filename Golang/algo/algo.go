@@ -1,10 +1,10 @@
-package algo
+package main
 
 type Node struct {
 	NextNode *Node
 }
 
-// 递归反转单链表
+// 1. 递归反转单链表
 func reverse(headNode *Node) *Node {
 	if headNode == nil {
 		return headNode
@@ -18,7 +18,7 @@ func reverse(headNode *Node) *Node {
 	return newNode
 }
 
-// 快速排序: 升序
+// 2. 快速排序: 升序
 func quickAscendingSort(arr []int, start, end int) {
 	if start < end {
 		i, j := start, end
@@ -44,4 +44,42 @@ func quickAscendingSort(arr []int, start, end int) {
 			quickAscendingSort(arr, i, end)
 		}
 	}
+}
+
+// 题目描述：给定一个源串和目标串，能够对源串进行如下操作：
+//   1.在给定位置上插入一个字符
+//   2.替换任意字符
+//   3.删除任意字符
+// 最短编辑距离: dp[i][j]=min{dp[i−1][j]+1, dp[i][j−1]+1, dp[i−1][j−1]+(S[i]==T[j] ? 0 : 1) }
+func EditDistance(src, dst string) int {
+	sLen := len(src)
+	dLen := len(dst)
+	dp := make([][]int, sLen+1)
+	dp[0] = make([]int, dLen+1)
+	// 边界dp[i][0] = i，dp[0][j] = j
+	for i := 1; i <= sLen; i++ {
+		dp[i] = make([]int, dLen+1)
+		dp[i][0] = i
+	}
+	for j := 1; j <= dLen; j++ {
+		dp[0][j] = j
+	}
+	for i := 1; i <= sLen; i++ {
+		for j := 1; j <= dLen; j++ {
+			if src[i-1] == dst[j-1] {
+				dp[i][j] = min(dp[i-1][j-1], min(dp[i-1][j], dp[i][j-1])+1)
+			} else {
+				dp[i][j] = min(dp[i-1][j-1]+1, min(dp[i-1][j], dp[i][j-1])+1)
+			}
+		}
+	}
+	return dp[sLen][dLen]
+
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
