@@ -66,7 +66,7 @@ func EditDistance(src, dst string) int {
 	}
 	for i := 1; i <= sLen; i++ {
 		for j := 1; j <= dLen; j++ {
-			if src[i-1] == dst[j-1] {
+			if src[i] == dst[j] {
 				dp[i][j] = min(dp[i-1][j-1], min(dp[i-1][j], dp[i][j-1])+1)
 			} else {
 				dp[i][j] = min(dp[i-1][j-1]+1, min(dp[i-1][j], dp[i][j-1])+1)
