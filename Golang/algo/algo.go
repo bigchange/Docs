@@ -46,10 +46,10 @@ func quickAscendingSort(arr []int, start, end int) {
 	}
 }
 
-// 题目描述：给定一个源串和目标串，能够对源串进行如下操作：
-//   1.在给定位置上插入一个字符
-//   2.替换任意字符
-//   3.删除任意字符
+// 3. 题目描述：给定一个源串和目标串，能够对源串进行如下操作：
+//   (1).在给定位置上插入一个字符
+//   (2).替换任意字符
+//   (3).删除任意字符
 // 最短编辑距离: dp[i][j]=min{dp[i−1][j]+1, dp[i][j−1]+1, dp[i−1][j−1]+(S[i]==T[j] ? 0 : 1) }
 func EditDistance(src, dst string) int {
 	sLen := len(src)
@@ -66,7 +66,7 @@ func EditDistance(src, dst string) int {
 	}
 	for i := 1; i <= sLen; i++ {
 		for j := 1; j <= dLen; j++ {
-			if src[i] == dst[j] {
+			if src[i-1] == dst[j-1] {
 				dp[i][j] = min(dp[i-1][j-1], min(dp[i-1][j], dp[i][j-1])+1)
 			} else {
 				dp[i][j] = min(dp[i-1][j-1]+1, min(dp[i-1][j], dp[i][j-1])+1)
@@ -83,3 +83,5 @@ func min(a, b int) int {
 	}
 	return b
 }
+
+// 4.
