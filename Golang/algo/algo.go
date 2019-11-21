@@ -1,5 +1,7 @@
 package main
 
+import "time"
+
 type Node struct {
 	NextNode *Node
 }
@@ -84,4 +86,12 @@ func min(a, b int) int {
 	return b
 }
 
-// 4.
+// 4. select
+func isSendOut(data []byte, outChan chan<- []byte, duration time.Duration) bool {
+	select {
+	case <-time.After(duration):
+		return false
+	case outChan <- data:
+		return true
+	}
+}
